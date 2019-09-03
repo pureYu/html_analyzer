@@ -1,0 +1,9 @@
+venv/
+
+# Mac
+.DS_Store
+
+.idea/workspace.xml
+.idea
+
+*.log
