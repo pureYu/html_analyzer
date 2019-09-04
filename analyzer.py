@@ -6,22 +6,26 @@ from sys import argv
 
 EXACT_CRITERIA_ID = "make-everything-ok-button"
 PATH_EXAMPLES_DIR = "html-examples"
+MATCHING_CRITERIA_RANKS = {"html_text": 10, "css_class": 5, "html_attr": 5}
 
 
+def main(argv):
 
-if len(argv) > 1:
-    _, origin_file, dif_file = argv
-else:
-    origin_file = "sample-0-origin.html"
-    dif_files = ["sample-1-evil-gemini.html", "sample-2-container-and-clone.html", "sample-3-the-escape.html", "sample-4-the-mash.html"]
-    origin_file = os.path.join(PATH_EXAMPLES_DIR, origin_file)
-    dif_file = os.path.join(PATH_EXAMPLES_DIR, dif_files[0])
-print ("Your origin file is:", origin_file)
-print ("Your dif file is:", dif_file)
+    if len(argv) == 1:
+        origin_file = "sample-0-origin.html"
+        dif_files = ["sample-1-evil-gemini.html", "sample-2-container-and-clone.html", "sample-3-the-escape.html", "sample-4-the-mash.html"]
+        origin_file = os.path.join(PATH_EXAMPLES_DIR, origin_file)
+        dif_file = os.path.join(PATH_EXAMPLES_DIR, dif_files[0])
+    else:
+        try:
+            _, origin_file, dif_file = argv
+        except Exception as error:
+            print(f"Exception: Set parameters correctly: python {os.path.basename(__file__)} <input_origin_file_path> <input_other_sample_file_path>")
+            exit()
 
+    print ("Your origin file is:", origin_file)
+    print ("Your dif file is:", dif_file)
 
-
-def main():
     try:
         soup_origin = BeautifulSoup(open(origin_file), "lxml")
         soup_diff = BeautifulSoup(open(dif_file), "lxml")
@@ -47,7 +51,7 @@ def main():
 
             # check for button text similarity:
             if element.text.strip() == origin_btn_text:
-                score += 10
+                score += MATCHING_CRITERIA_RANKS["html_text"]
 
             # check for button attributes similarity:
             for attr_key, attr_value in origin_btn_attrs.items():
@@ -57,9 +61,9 @@ def main():
                     if attr_key == 'class':
                         same_classes = list(set(attr_value) & set(element.attrs[attr_key]))
                         if len(same_classes):
-                            score += len(same_classes)*5
+                            score += len(same_classes) * MATCHING_CRITERIA_RANKS["css_class"]
                     elif element.attrs[attr_key] == attr_value:
-                        score += 5
+                        score += MATCHING_CRITERIA_RANKS["html_attr"]
 
             if score:
                 buttons.append({'element': element, 'score': score})
@@ -84,4 +88,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(argv)
